@@ -1,11 +1,11 @@
-import { NestFactory, HttpAdapterHost } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
-import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as Sentry from '@sentry/nestjs';
-import { SentryFilter } from '../src/sentry.filter';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import * as express from 'express';
+const { NestFactory, HttpAdapterHost } = require('@nestjs/core');
+const { AppModule } = require('../dist/app.module');
+const { ValidationPipe } = require('@nestjs/common');
+const { DocumentBuilder, SwaggerModule } = require('@nestjs/swagger');
+const Sentry = require('@sentry/nestjs');
+const { SentryFilter } = require('../dist/sentry.filter');
+const { ExpressAdapter } = require('@nestjs/platform-express');
+const express = require('express');
 
 const server = express();
 let isInitialized = false;
@@ -39,15 +39,15 @@ async function bootstrap() {
   }
 }
 
-export default async function handler(req: any, res: any) {
+module.exports = async (req, res) => {
   try {
     await bootstrap();
     server(req, res);
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({
       error: 'Vercel Serverless Initialization Error',
       message: error?.message || String(error),
       stack: error?.stack,
     });
   }
-}
+};
