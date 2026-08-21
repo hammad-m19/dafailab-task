@@ -3,7 +3,6 @@ import { AppModule } from '../src/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as Sentry from '@sentry/nestjs';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { SentryFilter } from '../src/sentry.filter';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as express from 'express';
@@ -16,9 +15,7 @@ async function bootstrap() {
     if (process.env.SENTRY_DSN) {
       Sentry.init({
         dsn: process.env.SENTRY_DSN,
-        integrations: [nodeProfilingIntegration()],
         tracesSampleRate: 1.0,
-        profilesSampleRate: 1.0,
       });
     }
 
@@ -43,6 +40,14 @@ async function bootstrap() {
 }
 
 export default async function handler(req: any, res: any) {
-  await bootstrap();
-  server(req, res);
+  try {
+    await bootstrap();
+    server(req, res);
+  } catch (error: any) {
+    res.status(500).json({
+      error: 'Vercel Serverless Initialization Error',
+      message: error?.message || String(error),
+      stack: error?.stack,
+    });
+  }
 }
